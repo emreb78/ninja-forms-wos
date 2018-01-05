@@ -1,0 +1,12 @@
+{
+    "name": "bdogan/ninja-forms-firebase",
+    "authors": [
+        {
+            "name": "Burak Doğan",
+            "email": "me@burak-dogan.com"
+        }
+    ],
+    "require": {
+
+    }
+}
