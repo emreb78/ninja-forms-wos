@@ -12,6 +12,8 @@
  * Copyright 2017 Burak Doğan.
  */
 
+require_once 'WosApiClient.php';
+
 if( version_compare( get_option( 'ninja_forms_version', '0.0.0' ), '3', '<' ) || get_option( 'ninja_forms_load_deprecated', FALSE ) ) {
 
     //include 'deprecated/ninja-forms-firebase.php';
@@ -97,6 +99,94 @@ if( version_compare( get_option( 'ninja_forms_version', '0.0.0' ), '3', '<' ) ||
              */
             add_filter( 'ninja_forms_register_actions', array($this, 'register_actions'));
 
+            /*
+             * Settings
+             */
+	          add_filter( 'ninja_forms_plugin_settings', array($this, 'plugin_settings'), 10, 1 );
+
+	          /*
+	           * Setttings Group
+	           */
+		        add_filter( 'ninja_forms_plugin_settings_groups', array( $this, 'plugin_settings_groups' ), 10, 1 );
+
+		        /**
+		         * Ajax calls
+		         */
+	          add_filter('wp_ajax_nopriv_get_province_list', array($this, 'get_province_list'), 0, 0);
+	          add_filter('wp_ajax_nopriv_get_district_list', array($this, 'get_district_list'), 0, 1);
+	          add_filter('wp_ajax_nopriv_get_stuff_list', array($this, 'get_stuff_list'), 0, 1);
+        }
+
+	      public function get_province_list()
+	      {
+		      header('Content-Type: application/json');
+		      header('Cache-Control: no-cache');
+		      header('Pragma: no-cache');
+		      WosApiClient::Init(Ninja_Forms()->get_setting('host'), Ninja_Forms()->get_setting('token'));
+		      echo json_encode(WosApiClient::ProvinceList());
+		      wp_die();
+	      }
+
+		    public function get_district_list($provinceId)
+		    {
+			    header('Content-Type: application/json');
+			    header('Cache-Control: no-cache');
+			    header('Pragma: no-cache');
+			    WosApiClient::Init(Ninja_Forms()->get_setting('host'), Ninja_Forms()->get_setting('token'));
+			    echo json_encode(WosApiClient::DistrictList(intval( $_POST['provinceId'] )));
+			    wp_die();
+		    }
+
+		    public function get_stuff_list()
+		    {
+			    header('Content-Type: application/json');
+			    header('Cache-Control: no-cache');
+			    header('Pragma: no-cache');
+			    WosApiClient::Init(Ninja_Forms()->get_setting('host'), Ninja_Forms()->get_setting('token'));
+			    echo json_encode(WosApiClient::StuffList());
+			    wp_die();
+		    }
+
+	     /**
+	      * Plugin Settings Groups
+	      *
+	      * @param $groups
+	      *
+	      * @return mixed
+	      */
+        public function plugin_settings_groups($groups)
+        {
+	        $groups[ 'wos_settings' ] = array(
+		        'id' => 'wos_settings',
+		        'label' => __( 'Waste Operation Settings', 'ninja-forms-wos' ),
+	        );
+	        return $groups;
+        }
+
+	     /**
+	      * Plugin Settings
+	      *
+	      * @param $settings
+	      *
+	      * @return mixed
+	      */
+        public function plugin_settings($settings)
+        {
+	        $settings[ 'wos_settings' ] = array(
+		        'token' => array(
+			        'id'    => 'token',
+			        'type'  => 'textbox',
+			        'label'  => __( 'Token', 'ninja-forms-wos' ),
+			        'desc'  => __( 'WOS token for api calls.', 'ninja-forms-wos' ),
+		        ),
+		        'host' => array(
+			        'id'    => 'host',
+			        'type'  => 'textbox',
+			        'label'  => __( 'Host address', 'ninja-forms-wos' ),
+			        'desc'  => __( 'WOS host address.', 'ninja-forms-wos' ),
+		        )
+	        );
+	        return $settings;
         }
 
         /**
@@ -115,6 +205,8 @@ if( version_compare( get_option( 'ninja_forms_version', '0.0.0' ), '3', '<' ) ||
 		    public function register_fields($actions)
 		    {
 			    $actions[ 'province_selector' ] = new NF_Wos_Fields_ProvinceSelector();
+			    $actions[ 'district_selector' ] = new NF_Wos_Fields_DistrictSelector();
+			    $actions[ 'stuff_selector' ] = new NF_Wos_Fields_StuffSelector();
 
 			    return $actions;
 		    }
