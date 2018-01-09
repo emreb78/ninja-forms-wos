@@ -3,14 +3,14 @@
 require_once plugin_dir_path(dirname(dirname(__FILE__))) . '/WosApiClient.php';
 
 /**
- * Class NF_Wos_Actions_SendWasteNotification
+ * Class NF_Wos_Actions_SendStuffNotification
  */
-final class NF_Wos_Actions_SendWasteNotification extends NF_Abstracts_Action
+final class NF_Wos_Actions_SendStuffNotification extends NF_Abstracts_Action
 {
   /**
    * @var string
    */
-  protected $_name  = 'waste_notification';
+  protected $_name  = 'stuff_notification';
 
   /**
    * @var array
@@ -34,11 +34,11 @@ final class NF_Wos_Actions_SendWasteNotification extends NF_Abstracts_Action
   {
     parent::__construct();
 
-		$settings = NF_Wos::config( 'ActionSendWasteNotificationSettings' );
+		$settings = NF_Wos::config( 'ActionSendStuffNotificationSettings' );
 
 		$this->_settings = array_merge( $this->_settings, $settings );
 
-    $this->_nicename = __( 'Waste Notification', 'ninja-forms' );
+    $this->_nicename = __( 'Stuff Notification', 'ninja-forms' );
 	}
 
 	/**
@@ -56,7 +56,7 @@ final class NF_Wos_Actions_SendWasteNotification extends NF_Abstracts_Action
   	$errors = array();
 
   	// Get config
-		$fields = array_keys(NF_Wos::config( 'ActionSendWasteNotificationSettings' ));
+		$fields = array_keys(NF_Wos::config( 'ActionSendStuffNotificationSettings' ));
 		// Get only required fields
 	  $wasteData = array_filter(
 		  $action_settings,
@@ -72,7 +72,7 @@ final class NF_Wos_Actions_SendWasteNotification extends NF_Abstracts_Action
 		  // Init client
 		  WosApiClient::Init(Ninja_Forms()->get_setting('host'), Ninja_Forms()->get_setting('token'));
 		  // Send operation data
-		  $results = WosApiClient::WasteOperationRecord($wasteData);
+		  $results = WosApiClient::StuffOperationRecord($wasteData);
 			// Check errors
 		  if (!$results || $results["success"] !== "ok") {
 		  	$message = $results ? $results["message"] : "Bilinmeyen hata";
@@ -83,7 +83,7 @@ final class NF_Wos_Actions_SendWasteNotification extends NF_Abstracts_Action
 			  }
 			  throw new Exception($message);
 		  }
-		  $data[ 'actions' ][ 'waste_notification' ][ 'sent' ] = true;
+		  $data[ 'actions' ][ 'stuff_notification' ][ 'sent' ] = true;
 	  } catch (Exception $e) {
 			// Set errors
 	  	$errors[ 'wos_api_error' ] = sprintf( __( 'Your email action "%s" has an error. Please check this setting and try again. ERROR: %s', 'ninja-forms'), $action_settings[ 'label' ], $e->getMessage() );

@@ -113,8 +113,11 @@ if( version_compare( get_option( 'ninja_forms_version', '0.0.0' ), '3', '<' ) ||
 		         * Ajax calls
 		         */
 	          add_filter('wp_ajax_nopriv_get_province_list', array($this, 'get_province_list'), 0, 0);
+	          add_filter('wp_ajax_get_province_list', array($this, 'get_province_list'), 0, 0);
 	          add_filter('wp_ajax_nopriv_get_district_list', array($this, 'get_district_list'), 0, 1);
+	          add_filter('wp_ajax_get_district_list', array($this, 'get_district_list'), 0, 1);
 	          add_filter('wp_ajax_nopriv_get_stuff_list', array($this, 'get_stuff_list'), 0, 1);
+	          add_filter('wp_ajax_get_stuff_list', array($this, 'get_stuff_list'), 0, 1);
         }
 
 	      public function get_province_list()
@@ -122,18 +125,28 @@ if( version_compare( get_option( 'ninja_forms_version', '0.0.0' ), '3', '<' ) ||
 		      header('Content-Type: application/json');
 		      header('Cache-Control: no-cache');
 		      header('Pragma: no-cache');
-		      WosApiClient::Init(Ninja_Forms()->get_setting('host'), Ninja_Forms()->get_setting('token'));
-		      echo json_encode(WosApiClient::ProvinceList());
+		      $provinceList = wp_cache_get('wos_province_list');
+		      if ($provinceList === false) {
+			      WosApiClient::Init(Ninja_Forms()->get_setting('host'), Ninja_Forms()->get_setting('token'));
+			      $provinceList = WosApiClient::ProvinceList();
+			      wp_cache_set('wos_province_list', $provinceList,'', 3600);
+		      }
+		      echo json_encode($provinceList);
 		      wp_die();
 	      }
 
-		    public function get_district_list($provinceId)
+		    public function get_district_list()
 		    {
 			    header('Content-Type: application/json');
 			    header('Cache-Control: no-cache');
 			    header('Pragma: no-cache');
-			    WosApiClient::Init(Ninja_Forms()->get_setting('host'), Ninja_Forms()->get_setting('token'));
-			    echo json_encode(WosApiClient::DistrictList(intval( $_POST['provinceId'] )));
+			    $districtList = wp_cache_get('wos_district_list');
+			    if ($districtList === false) {
+				    WosApiClient::Init(Ninja_Forms()->get_setting('host'), Ninja_Forms()->get_setting('token'));
+				    $districtList = WosApiClient::DistrictList(intval( $_POST['provinceId'] ));
+				    wp_cache_set('wos_district_list', $districtList,'', 3600);
+			    }
+			    echo json_encode($districtList);
 			    wp_die();
 		    }
 
@@ -142,8 +155,13 @@ if( version_compare( get_option( 'ninja_forms_version', '0.0.0' ), '3', '<' ) ||
 			    header('Content-Type: application/json');
 			    header('Cache-Control: no-cache');
 			    header('Pragma: no-cache');
-			    WosApiClient::Init(Ninja_Forms()->get_setting('host'), Ninja_Forms()->get_setting('token'));
-			    echo json_encode(WosApiClient::StuffList());
+			    $stuffList = wp_cache_get('wos_stuff_list');
+			    if ($stuffList === false) {
+				    WosApiClient::Init(Ninja_Forms()->get_setting('host'), Ninja_Forms()->get_setting('token'));
+				    $stuffList = WosApiClient::StuffList();
+				    wp_cache_set('wos_stuff_list', $stuffList,'', 3600);
+			    }
+			    echo json_encode($stuffList);
 			    wp_die();
 		    }
 
@@ -194,7 +212,8 @@ if( version_compare( get_option( 'ninja_forms_version', '0.0.0' ), '3', '<' ) ||
          */
         public function register_actions($actions)
         {
-            $actions[ 'send_waste_notification' ] = new NF_Wos_Actions_SendWasteNotification();
+            $actions[ 'waste_notification' ] = new NF_Wos_Actions_SendWasteNotification();
+            $actions[ 'stuff_notification' ] = new NF_Wos_Actions_SendStuffNotification();
 
             return $actions;
         }
