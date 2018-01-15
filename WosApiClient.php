@@ -116,12 +116,23 @@ class WosApiClient {
 	}
 
 	/**
+ * @param $data
+ *
+ * @return array|mixed|object
+ * @throws Exception
+ */
+	public static function StuffOperationRecord($data) {
+		return self::_apiCall('/api/stuff_operations/create.json', $data);
+	}
+
+	/**
 	 * @param $data
 	 *
 	 * @return array|mixed|object
 	 * @throws Exception
 	 */
-	public static function StuffOperationRecord($data) {
-		return self::_apiCall('/api/stuff_operations/create.json', $data);
+	public static function TotalCollectedRecord() {
+		return self::_apiCall('/api/total.json');
 	}
+
 }

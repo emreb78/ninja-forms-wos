@@ -118,7 +118,26 @@ if( version_compare( get_option( 'ninja_forms_version', '0.0.0' ), '3', '<' ) ||
 	          add_filter('wp_ajax_get_district_list', array($this, 'get_district_list'), 0, 1);
 	          add_filter('wp_ajax_nopriv_get_stuff_list', array($this, 'get_stuff_list'), 0, 1);
 	          add_filter('wp_ajax_get_stuff_list', array($this, 'get_stuff_list'), 0, 1);
+
+	          /**
+	           * Short codes
+	           */
+	          add_shortcode('wos_total_collected', array($this, 'get_total_collected'));
         }
+
+	      public function get_total_collected($atts = array()) {
+        	$atts = array_merge(array(
+        		'format' => true
+	        ), $atts ? $atts : array());
+		      $totalCollected = wp_cache_get('wos_total_collected');
+		      if ($totalCollected === false) {
+			      WosApiClient::Init(Ninja_Forms()->get_setting('host'), Ninja_Forms()->get_setting('token'));
+			      $totalCollected = WosApiClient::TotalCollectedRecord();
+			      wp_cache_set('wos_total_collected', $totalCollected,'', 3600);
+		      }
+		      $total = $totalCollected && isset($totalCollected['total_collected']) ? $totalCollected['total_collected'] : -1;
+					return $atts['format'] ? number_format($total, 0, '', '.') . ' kg' : $total;
+	      }
 
 	      public function get_province_list()
 	      {
