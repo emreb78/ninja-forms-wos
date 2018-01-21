@@ -135,4 +135,15 @@ class WosApiClient {
 		return self::_apiCall('/api/total.json');
 	}
 
+	/**
+	 * @param $start
+	 * @param $end
+	 *
+	 * @return array|mixed|object
+	 * @throws Exception
+	 */
+	public static function EventsRecord($start, $end) {
+		return self::_apiCall('/api/calendar.json', array( 'start' => $start, 'end' => $end ));
+	}
+
 }

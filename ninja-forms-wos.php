@@ -13,6 +13,7 @@
  */
 
 require_once 'WosApiClient.php';
+require_once 'YoutubeApiClient.php';
 
 if( version_compare( get_option( 'ninja_forms_version', '0.0.0' ), '3', '<' ) || get_option( 'ninja_forms_load_deprecated', FALSE ) ) {
 
@@ -119,10 +120,22 @@ if( version_compare( get_option( 'ninja_forms_version', '0.0.0' ), '3', '<' ) ||
 	          add_filter('wp_ajax_nopriv_get_stuff_list', array($this, 'get_stuff_list'), 0, 1);
 	          add_filter('wp_ajax_get_stuff_list', array($this, 'get_stuff_list'), 0, 1);
 
+		        /**
+		         * Custom events
+		         */
+	          add_filter('wos_get_events', array($this, 'wos_get_events'), 0, 1);
+
 	          /**
 	           * Short codes
 	           */
 	          add_shortcode('wos_total_collected', array($this, 'get_total_collected'));
+	          add_shortcode('youtube_video', array($this, 'youtube_video'));
+        }
+
+        public function wos_get_events($atts = array()) {
+	        $atts = array_values($atts);
+	        WosApiClient::Init(Ninja_Forms()->get_setting('host'), Ninja_Forms()->get_setting('token'));
+	        return WosApiClient::EventsRecord($atts[0], $atts[1]);
         }
 
 	      public function get_total_collected($atts = array()) {
@@ -137,6 +150,20 @@ if( version_compare( get_option( 'ninja_forms_version', '0.0.0' ), '3', '<' ) ||
 		      }
 		      $total = $totalCollected && isset($totalCollected['total_collected']) ? $totalCollected['total_collected'] : -1;
 					return $atts['format'] ? number_format($total, 0, '', '.') . ' kg' : $total;
+	      }
+
+	      public function youtube_video($atts = array(), $content) {
+		      $atts = array_merge(array(
+			      'channel_id' => null,
+			      'limit' => 4
+		      ), $atts ? $atts : array());
+		      YoutubeApiClient::Init(Ninja_Forms()->get_setting('youtube_key'));
+		      $videos = YoutubeApiClient::getChannelVideos($atts['channel_id'], $atts['limit']);
+		      // Render banner
+		      ob_start();
+		      include(locate_template('template-parts/section/youtube.php'));
+		      wp_reset_postdata();
+		      return ob_get_clean();
 	      }
 
 	      public function get_province_list()
@@ -221,6 +248,12 @@ if( version_compare( get_option( 'ninja_forms_version', '0.0.0' ), '3', '<' ) ||
 			        'type'  => 'textbox',
 			        'label'  => __( 'Host address', 'ninja-forms-wos' ),
 			        'desc'  => __( 'WOS host address.', 'ninja-forms-wos' ),
+		        ),
+		        'youtube_key' => array(
+			        'id'    => 'youtube_key',
+			        'type'  => 'textbox',
+			        'label'  => __( 'Youtube Key', 'ninja-forms-wos' ),
+			        'desc'  => __( 'Youtube api key for api calls.', 'ninja-forms-wos' ),
 		        )
 	        );
 	        return $settings;
