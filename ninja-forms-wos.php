@@ -128,8 +128,8 @@ if( version_compare( get_option( 'ninja_forms_version', '0.0.0' ), '3', '<' ) ||
 	          /**
 	           * Short codes
 	           */
-	          add_shortcode('wos_total_collected', array($this, 'get_total_collected'));
-	          add_shortcode('youtube_video', array($this, 'youtube_video'));
+			  add_shortcode('wos_total_collected', array($this, 'get_total_collected'));
+			  add_shortcode('youtube_video', array($this, 'youtube_video'));
         }
 
         public function wos_get_events($atts = array()) {
@@ -138,20 +138,24 @@ if( version_compare( get_option( 'ninja_forms_version', '0.0.0' ), '3', '<' ) ||
 	        return WosApiClient::EventsRecord($atts[0], $atts[1]);
         }
 
-	      public function get_total_collected($atts = array()) {
+	      public function get_total_collected($atts = array(), $content = null, $tag = '') {
+			$atts = array_change_key_case((array)$atts, CASE_LOWER);
+			$args = shortcode_atts([ 'year' => null ], $atts, $tag);
         	$atts = array_merge(array(
         		'format' => true
-	        ), $atts ? $atts : array());
-		      $totalCollected = wp_cache_get('wos_total_collected');
+			), $atts ? $atts : array());
+				$cache_key = !$args['year'] ? 'wos_total_collected' : 'wos_total_collected_' . $args['year'];
+		      $totalCollected = wp_cache_get($cache_key);
 		      if ($totalCollected === false) {
 			      WosApiClient::Init(Ninja_Forms()->get_setting('host'), Ninja_Forms()->get_setting('token'));
-			      $totalCollected = WosApiClient::TotalCollectedRecord();
-			      wp_cache_set('wos_total_collected', $totalCollected,'', 3600);
+			      $totalCollected = WosApiClient::TotalCollectedRecord($args['year']);
+			      wp_cache_set($cache_key, $totalCollected,'', 3600);
 		      }
 		      $total = $totalCollected && isset($totalCollected['total_collected']) ? $totalCollected['total_collected'] : -1;
 					return $atts['format'] ? number_format($total, 0, '', '.') . ' kg' : $total;
-	      }
-
+		  }
+		  
+		  
 	      public function youtube_video($atts = array(), $content) {
 		      $atts = array_merge(array(
 			      'channel_id' => null,

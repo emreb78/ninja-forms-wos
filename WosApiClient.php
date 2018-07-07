@@ -131,8 +131,8 @@ class WosApiClient {
 	 * @return array|mixed|object
 	 * @throws Exception
 	 */
-	public static function TotalCollectedRecord() {
-		return self::_apiCall('/api/total.json');
+	public static function TotalCollectedRecord($year = null) {
+		return !$year ? self::_apiCall('/api/total.json') : self::_apiCall('/api/total/after_year/' . $year . '.json');
 	}
 
 	/**
