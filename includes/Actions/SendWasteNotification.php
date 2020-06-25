@@ -90,9 +90,9 @@ final class NF_Wos_Actions_SendWasteNotification extends NF_Abstracts_Action
 	  }
 
 	  // Report admin
-	  if ( current_user_can( 'manage_options' ) ){
-		  $data[ 'errors' ][ 'form' ] = $errors;
-	  }
+	  //if ( current_user_can( 'manage_options' ) ){
+	//	  $data[ 'errors' ][ 'form' ] = $errors;
+	  //}
 
 	  // Show field errors
 	  if ($fieldErrors) {
