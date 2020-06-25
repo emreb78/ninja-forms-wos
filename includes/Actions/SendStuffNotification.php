@@ -89,10 +89,10 @@ final class NF_Wos_Actions_SendStuffNotification extends NF_Abstracts_Action
 	  	$errors[ 'wos_api_error' ] = sprintf( __( 'Your email action "%s" has an error. Please check this setting and try again. ERROR: %s', 'ninja-forms'), $action_settings[ 'label' ], $e->getMessage() );
 	  }
 
-	  // Report admin
-	  if ( current_user_can( 'manage_options' ) ){
-		  $data[ 'errors' ][ 'form' ] = $errors;
-	  }
+	  // Report admin burası formun çalışmasını engeliyor
+	  // if ( current_user_can( 'manage_options' ) ){
+	 //	  $data[ 'errors' ][ 'form' ] = $errors;
+	 // }
 
 	  // Show field errors
 	  if ($fieldErrors) {
